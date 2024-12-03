@@ -13,64 +13,57 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import axios, { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-// Define types for form data and API response
-interface RegisterFormData {
+interface LoginFormData {
   username: string;
-  email: string;
   password: string;
 }
 
-interface APIResponse {
-  message: string;
-  user?: {
-    id: string;
-    email: string;
-    username: string;
-  };
-}
-
-const RegisterForm = () => {
-  const [formData, setFormData] = useState<RegisterFormData>({
+export default function LoginForm() {
+  const [formData, setFormData] = useState<LoginFormData>({
     username: "",
-    email: "",
     password: "",
   });
-
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
-  // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const response = await axios.post<APIResponse>(
-        "http://localhost:8000/auth/register",
+      const response = await axios.post(
+        "http://localhost:8000/auth/login",
         formData
       );
 
-      // Show success message and clear form
+      // Handle any post-login logic (e.g., redirect, store token)
+      const { token, username } = response.data;
+      localStorage.setItem("token", token); // Example: Store token in localStorage
+
+      // Show success toast
       toast({
-        title: "Registration Successful",
-        description: response.data.message,
+        title: "Login Successful 🎉",
+        description: `Welcome back, ${username}!`,
       });
 
-      setFormData({ username: "", email: "", password: "" });
+      router.push("/");
     } catch (error) {
-      // Handle errors
       const err = error as AxiosError<{ message: string }>;
+      // Show error toast
       toast({
-        title: "Registration Failed",
-        description: err.response?.data.message || "Something went wrong.",
+        title: "Login Failed ❌",
+        description:
+          err.response?.data.message ||
+          "Invalid credentials. Please try again.",
       });
     } finally {
       setLoading(false);
@@ -80,26 +73,13 @@ const RegisterForm = () => {
   return (
     <Card className="w-[350px]">
       <CardHeader>
-        <CardTitle>Create an Account</CardTitle>
+        <CardTitle>Login</CardTitle>
         <CardDescription>
           Create a new account to start crafting word into something useful!
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="grid w-full items-center gap-6">
-            <div className="flex flex-col space-y-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                name="email"
-                id="email"
-                type="email"
-                placeholder="example@email.com"
-                value={formData.email}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
           <div className="grid w-full items-center gap-6">
             <div className="flex flex-col space-y-1.5">
               <Label htmlFor="username">Username</Label>
@@ -136,6 +116,4 @@ const RegisterForm = () => {
       <CardFooter className="flex justify-end"></CardFooter>
     </Card>
   );
-};
-
-export default RegisterForm;
+}
