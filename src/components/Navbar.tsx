@@ -35,12 +35,14 @@ const Navbar = () => {
             <Link href="#">Contact</Link>
           </li>
           <li className="hover:text-blue-600">
-            <Link href="#">Login</Link>
+            <Link href="/auth/login">Login</Link>
           </li>
           <li>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              Become a Writer
-            </Button>
+            <Link href="/auth/register">
+              <Button className="bg-blue-600 hover:bg-blue-700">
+                Become a Writer
+              </Button>
+            </Link>
           </li>
         </ul>
       </div>
